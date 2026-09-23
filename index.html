@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Ashen Citadel - دژ خاکستر</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="game-container">
+    <div id="top-bar">
+      <div class="resource" id="res-wood" title="چوب">🪵 <span>0</span></div>
+      <div class="resource" id="res-stone" title="سنگ">🪨 <span>0</span></div>
+      <div class="resource" id="res-food" title="غذا">🍖 <span>0</span></div>
+      <div class="resource" id="res-coal" title="زغال">🔥 <span>0</span></div>
+      <div class="resource" id="res-iron" title="آهن">⚙️ <span>0</span></div>
+      <div class="resource crystal" id="res-crystal" title="کریستال">💎 <span>0</span></div>
+    </div>
+
+    <div id="heat-bar-container">
+      <div id="heat-label">گرمای دژ</div>
+      <div id="heat-bar">
+        <div id="heat-fill"></div>
+      </div>
+      <div id="heat-value">100%</div>
+    </div>
+
+    <div id="main-area">
+      <canvas id="game-canvas" width="400" height="500"></canvas>
+      
+      <div id="building-panel" class="panel hidden">
+        <h3 id="building-title">ساختمان</h3>
+        <p id="building-desc"></p>
+        <p id="building-level"></p>
+        <p id="building-cost"></p>
+        <button id="btn-upgrade" class="btn primary">ارتقاء</button>
+        <button id="btn-close-panel" class="btn">بستن</button>
+      </div>
+    </div>
+
+    <div id="bottom-bar">
+      <button class="action-btn" id="btn-build" title="ساخت و ساز">🏗️</button>
+      <button class="action-btn" id="btn-heroes" title="قهرمانان">⚔️</button>
+      <button class="action-btn" id="btn-defend" title="دفاع از دژ">🛡️</button>
+      <button class="action-btn" id="btn-map" title="نقشه">🗺️</button>
+      <button class="action-btn" id="btn-alliance" title="اتحاد">🤝</button>
+    </div>
+
+    <div id="notification" class="hidden"></div>
+
+    <div id="defense-overlay" class="hidden">
+      <div id="defense-ui">
+        <h2>حمله به دژ!</h2>
+        <p>دشمنان نزدیک می‌شوند...</p>
+        <div id="wave-info">موج ۱</div>
+        <canvas id="defense-canvas" width="360" height="400"></canvas>
+        <button id="btn-start-defense" class="btn primary">شروع دفاع</button>
+        <button id="btn-exit-defense" class="btn">بازگشت</button>
+      </div>
+    </div>
+
+    <div id="start-screen">
+      <div class="start-content">
+        <h1>ASHEN CITADEL</h1>
+        <h2>دژ خاکستر</h2>
+        <p>جهان یخ زده است. تو آخرین امید مردمی...</p>
+        <button id="btn-start-game" class="btn primary large">شروع بازی</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>
