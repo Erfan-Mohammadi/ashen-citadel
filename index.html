@@ -19,15 +19,12 @@
 
     <div id="heat-bar-container">
       <div id="heat-label">گرمای دژ</div>
-      <div id="heat-bar">
-        <div id="heat-fill"></div>
-      </div>
+      <div id="heat-bar"><div id="heat-fill"></div></div>
       <div id="heat-value">100%</div>
     </div>
 
     <div id="main-area">
       <canvas id="game-canvas" width="400" height="500"></canvas>
-      
       <div id="building-panel" class="panel hidden">
         <h3 id="building-title">ساختمان</h3>
         <p id="building-desc"></p>
@@ -47,6 +44,12 @@
     </div>
 
     <div id="notification" class="hidden"></div>
+
+    <div id="hero-panel" class="panel hidden" style="bottom: 80px; max-height: 55%; overflow-y: auto;">
+      <h3>قهرمانان دژ</h3>
+      <div id="hero-list"></div>
+      <button id="btn-close-heroes" class="btn">بستن</button>
+    </div>
 
     <div id="defense-overlay" class="hidden">
       <div id="defense-ui">
@@ -68,7 +71,6 @@
       </div>
     </div>
   </div>
-
   <script src="js/game.js"></script>
 </body>
 </html>
