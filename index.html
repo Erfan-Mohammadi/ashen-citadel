@@ -16,13 +16,11 @@
       <div class="resource" id="res-iron" title="آهن">⚙️ <span>0</span></div>
       <div class="resource crystal" id="res-crystal" title="کریستال">💎 <span>0</span></div>
     </div>
-
     <div id="heat-bar-container">
       <div id="heat-label">گرمای دژ</div>
       <div id="heat-bar"><div id="heat-fill"></div></div>
       <div id="heat-value">100%</div>
     </div>
-
     <div id="main-area">
       <canvas id="game-canvas" width="400" height="500"></canvas>
       <div id="building-panel" class="panel hidden">
@@ -34,7 +32,6 @@
         <button id="btn-close-panel" class="btn">بستن</button>
       </div>
     </div>
-
     <div id="bottom-bar">
       <button class="action-btn" id="btn-build" title="ساخت و ساز">🏗️</button>
       <button class="action-btn" id="btn-heroes" title="قهرمانان">⚔️</button>
@@ -42,15 +39,22 @@
       <button class="action-btn" id="btn-map" title="نقشه">🗺️</button>
       <button class="action-btn" id="btn-alliance" title="اتحاد">🤝</button>
     </div>
-
     <div id="notification" class="hidden"></div>
-
+    <div id="tutorial-overlay" class="hidden">
+      <div id="tutorial-box">
+        <div id="tutorial-step">۱ / ۵</div>
+        <p id="tutorial-text">متن آموزش</p>
+        <div id="tutorial-actions">
+          <button id="btn-tutorial-skip" class="btn">رد کردن</button>
+          <button id="btn-tutorial-next" class="btn primary">بعدی</button>
+        </div>
+      </div>
+    </div>
     <div id="hero-panel" class="panel hidden" style="bottom: 80px; max-height: 55%; overflow-y: auto;">
       <h3>قهرمانان دژ</h3>
       <div id="hero-list"></div>
       <button id="btn-close-heroes" class="btn">بستن</button>
     </div>
-
     <div id="defense-overlay" class="hidden">
       <div id="defense-ui">
         <h2>حمله به دژ!</h2>
@@ -61,7 +65,6 @@
         <button id="btn-exit-defense" class="btn">بازگشت</button>
       </div>
     </div>
-
     <div id="start-screen">
       <div class="start-content">
         <h1>ASHEN CITADEL</h1>
