@@ -15,6 +15,11 @@ body { background: #0a0e17; color: #e0e6f0; overflow: hidden; height: 100vh; dis
 .panel h3 { color: #88ccff; margin-bottom: 8px; }
 .panel p { font-size: 13px; margin-bottom: 6px; color: #a0b0c0; }
 .hidden { display: none !important; }
+#tutorial-overlay { position: absolute; inset: 0; background: rgba(5, 10, 20, 0.75); z-index: 150; display: flex; align-items: flex-end; justify-content: center; padding: 20px 16px 90px; }
+#tutorial-box { background: rgba(15, 28, 48, 0.98); border: 1px solid #4a7aaa; border-radius: 14px; padding: 16px 18px; width: 100%; max-width: 340px; box-shadow: 0 8px 32px rgba(0, 80, 160, 0.35); }
+#tutorial-step { font-size: 11px; color: #6a9acc; margin-bottom: 6px; }
+#tutorial-text { font-size: 14px; line-height: 1.55; color: #d0dce8; margin-bottom: 14px; }
+#tutorial-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .btn { background: #2a3a4a; color: #e0e6f0; border: 1px solid #4a5a6a; padding: 10px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; margin: 4px; transition: all 0.2s; }
 .btn:active { transform: scale(0.96); }
 .btn.primary { background: linear-gradient(180deg, #3a7ab0, #2a5a90); border-color: #5a9ad0; }
