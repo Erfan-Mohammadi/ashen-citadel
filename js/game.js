@@ -1,13 +1,23 @@
 // ============================================
-// Ashen Citadel - Core Game Prototype v0.2
-// Added: Hero System + Improved Defense
+// Ashen Citadel - Core Game Prototype v0.3
+// Added: Save / Load (LocalStorage) + Auto-save
 // ============================================
 
 const Game = {
   resources: {
-    wood: 120, stone: 80, food: 150, coal: 60, iron: 20, crystal: 8
+    wood: 120,
+    stone: 80,
+    food: 150,
+    coal: 60,
+    iron: 20,
+    crystal: 8
   },
-  heat: 100, heatMax: 100, heatProduction: 2.2, heatConsumption: 1.1,
+
+  heat: 100,
+  heatMax: 100,
+  heatProduction: 2.2,
+  heatConsumption: 1.1,
+
   buildings: {
     citadel:  { level: 1, name: "دژ مرکزی",   desc: "قلب دژ و منبع اصلی گرما", baseCost: { wood: 50, stone: 30, coal: 20 } },
     woodcamp: { level: 1, name: "اردوگاه چوب", desc: "تولید چوب",             baseCost: { wood: 30, stone: 15 } },
@@ -15,27 +25,58 @@ const Game = {
     coalpit:  { level: 0, name: "کوره زغال",  desc: "تولید زغال برای گرما",  baseCost: { wood: 40, stone: 25 } },
     barracks: { level: 0, name: "اردوگاه نیرو", desc: "تربیت سرباز",         baseCost: { wood: 60, stone: 40, iron: 10 } }
   },
-  production: { wood: 3.2, stone: 1.6, food: 4.2, coal: 0.9, iron: 0.35 },
+
+  production: {
+    wood: 3.2,
+    stone: 1.6,
+    food: 4.2,
+    coal: 0.9,
+    iron: 0.35
+  },
+
   heroes: [
     { id: "kaveh", name: "کاوه آهنین", role: "Vanguard", roleFa: "محافظ", level: 1, stars: 1, hp: 420, atk: 35, def: 55, skill: "سپر فولادی", owned: true, description: "تانک خط مقدم با دفاع بالا" },
     { id: "arash", name: "آرش آتشین", role: "Destroyer", roleFa: "نابودگر", level: 1, stars: 1, hp: 280, atk: 78, def: 22, skill: "تیر آتشین", owned: true, description: "تیرانداز با آسیب ناحیه‌ای" },
     { id: "anahita", name: "آناهیتا", role: "Support", roleFa: "پشتیبان", level: 1, stars: 1, hp: 310, atk: 28, def: 30, skill: "چشمه حیات", owned: false, description: "درمانگر قدرتمند (با کریستال باز می‌شود)" },
     { id: "rostam", name: "رستم سایه", role: "Destroyer", roleFa: "نابودگر", level: 1, stars: 2, hp: 300, atk: 95, def: 28, skill: "ضربه سایه‌ای", owned: false, description: "قاتل تک‌هدف با آسیب بحرانی" }
   ],
-  selectedBuilding: null, inDefense: false, gameStarted: false,
-  defenseWave: 1, defenseEnemies: [], defenseHeroes: [], defenseRunning: false,
-  canvas: null, ctx: null, defenseCanvas: null, defenseCtx: null,
+
+  selectedBuilding: null,
+  inDefense: false,
+  gameStarted: false,
+  defenseWave: 1,
+  defenseEnemies: [],
+  defenseHeroes: [],
+  defenseRunning: false,
+  _loadedFromSave: false,
+
+  canvas: null,
+  ctx: null,
+  defenseCanvas: null,
+  defenseCtx: null,
 
   init() {
     this.canvas = document.getElementById('game-canvas');
     this.ctx = this.canvas.getContext('2d');
     this.defenseCanvas = document.getElementById('defense-canvas');
     this.defenseCtx = this.defenseCanvas.getContext('2d');
+
     this.bindEvents();
+
+    const hasSave = this.loadGame();
+    if (hasSave) {
+      document.getElementById('btn-start-game').textContent = 'ادامه بازی';
+      document.querySelector('.start-content p').textContent = 'پیشرفت قبلی شما ذخیره شده است.';
+    }
+
     this.updateUI();
     this.drawBase();
     this.renderHeroList();
+
     setInterval(() => this.tick(), 1000);
+    setInterval(() => {
+      if (this.gameStarted) this.saveGame(true);
+    }, 15000);
   },
 
   bindEvents() {
@@ -53,8 +94,84 @@ const Game = {
   startGame() {
     document.getElementById('start-screen').classList.add('hidden');
     this.gameStarted = true;
-    this.notify("به دژ خاکستر خوش آمدی، فرمانده!");
-    setTimeout(() => this.notify("دژ را گرم نگه دار و مردم را نجات بده."), 1200);
+    if (this._loadedFromSave) {
+      this.notify("خوش برگشتی، فرمانده!");
+    } else {
+      this.notify("به دژ خاکستر خوش آمدی، فرمانده!");
+      setTimeout(() => this.notify("دژ را گرم نگه دار و مردم را نجات بده."), 1200);
+    }
+    this.saveGame(true);
+  },
+
+  saveGame(silent = false) {
+    try {
+      const data = {
+        version: 3,
+        resources: this.resources,
+        heat: this.heat,
+        heatMax: this.heatMax,
+        heatProduction: this.heatProduction,
+        heatConsumption: this.heatConsumption,
+        buildings: {},
+        production: this.production,
+        heroes: this.heroes.map(h => ({ id: h.id, level: h.level, stars: h.stars, owned: h.owned, hp: h.hp, atk: h.atk, def: h.def })),
+        defenseWave: this.defenseWave,
+        savedAt: Date.now()
+      };
+      for (let key in this.buildings) {
+        data.buildings[key] = { level: this.buildings[key].level };
+      }
+      localStorage.setItem('ashen_citadel_save', JSON.stringify(data));
+      if (!silent) this.notify("بازی ذخیره شد.");
+    } catch (e) {
+      console.warn('Save failed', e);
+    }
+  },
+
+  loadGame() {
+    try {
+      const raw = localStorage.getItem('ashen_citadel_save');
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      if (!data || data.version < 2) return false;
+
+      this.resources = { ...this.resources, ...data.resources };
+      this.heat = data.heat ?? this.heat;
+      this.heatMax = data.heatMax ?? this.heatMax;
+      this.heatProduction = data.heatProduction ?? this.heatProduction;
+      this.heatConsumption = data.heatConsumption ?? this.heatConsumption;
+      this.production = { ...this.production, ...data.production };
+      this.defenseWave = data.defenseWave || 1;
+
+      if (data.buildings) {
+        for (let key in data.buildings) {
+          if (this.buildings[key]) this.buildings[key].level = data.buildings[key].level;
+        }
+      }
+      if (data.heroes) {
+        data.heroes.forEach(saved => {
+          const h = this.heroes.find(x => x.id === saved.id);
+          if (h) {
+            h.owned = saved.owned;
+            h.level = saved.level || 1;
+            h.stars = saved.stars || 1;
+            h.hp = saved.hp || h.hp;
+            h.atk = saved.atk || h.atk;
+            h.def = saved.def || h.def;
+          }
+        });
+      }
+      this._loadedFromSave = true;
+      return true;
+    } catch (e) {
+      console.warn('Load failed', e);
+      return false;
+    }
+  },
+
+  resetGame() {
+    localStorage.removeItem('ashen_citadel_save');
+    location.reload();
   },
 
   tick() {
@@ -174,7 +291,7 @@ const Game = {
     if (key === 'citadel' && this.buildings.citadel.level === 2 && this.buildings.coalpit.level === 0) { this.buildings.coalpit.level = 1; this.notify('کوره زغال ساخته شد!'); }
     if (key === 'citadel' && this.buildings.citadel.level === 3 && this.buildings.barracks.level === 0) { this.buildings.barracks.level = 1; this.notify('اردوگاه نیرو باز شد!'); }
     this.notify(this.buildings[key].name + ' به سطح ' + this.buildings[key].level + ' ارتقا یافت!');
-    this.closePanel(); this.updateUI(); this.drawBase();
+    this.closePanel(); this.updateUI(); this.drawBase(); this.saveGame(true);
   },
 
   toggleHeroPanel(show) {
@@ -207,12 +324,12 @@ const Game = {
     if (this.resources.crystal < 8) { this.notify('کریستال کافی نیست!'); return; }
     this.resources.crystal -= 8; hero.owned = true;
     this.notify(hero.name + ' به جمع قهرمانان پیوست!');
-    this.updateUI(); this.renderHeroList();
+    this.updateUI(); this.renderHeroList(); this.saveGame(true);
   },
 
   openDefense() {
     document.getElementById('defense-overlay').classList.remove('hidden');
-    this.inDefense = true; this.defenseWave = 1;
+    this.inDefense = true;
     document.getElementById('wave-info').textContent = 'موج ' + this.defenseWave;
     document.getElementById('btn-start-defense').style.display = 'inline-block';
   },
@@ -276,7 +393,7 @@ const Game = {
       this.defenseWave++;
       document.getElementById('wave-info').textContent = 'موج ' + this.defenseWave;
       this.notify('پیروزی! موج بعدی آماده است.');
-      this.updateUI();
+      this.updateUI(); this.saveGame(true);
       document.getElementById('btn-start-defense').style.display = 'inline-block';
       return;
     }
@@ -285,7 +402,7 @@ const Game = {
       this.heat = Math.max(10, this.heat - 12);
       this.resources.food = Math.max(0, this.resources.food - 25);
       this.notify('دژ آسیب دید... گرما و غذا کاهش یافت.');
-      this.updateUI();
+      this.updateUI(); this.saveGame(true);
       document.getElementById('btn-start-defense').style.display = 'inline-block';
       return;
     }
