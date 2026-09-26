@@ -33,6 +33,12 @@ body { background: #0a0e17; color: #e0e6f0; overflow: hidden; height: 100vh; dis
 .hero-skill { font-size: 11px; color: #ffaa66; margin-bottom: 6px; }
 .hero-actions { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
 .hero-actions .btn { width: 100%; text-align: center; font-size: 11px; padding: 6px 8px; }
+.mission-card { background: rgba(20, 35, 55, 0.9); border: 1px solid #3a5a7a; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+.mission-card.done { border-color: #3a8a5a; opacity: 0.9; }
+.mission-card.claimed { opacity: 0.5; border-color: #3a4a5a; }
+.mission-title { font-weight: bold; color: #88ccff; margin-bottom: 4px; font-size: 13px; }
+.mission-progress { font-size: 12px; color: #a0b0c0; margin-bottom: 6px; }
+.mission-reward { font-size: 11px; color: #ffaa66; margin-bottom: 6px; }
 #bottom-bar { display: flex; justify-content: space-around; padding: 10px 8px; background: rgba(0, 0, 0, 0.7); border-top: 1px solid #2a3a4a; z-index: 10; }
 .action-btn { width: 52px; height: 52px; border-radius: 50%; background: #1a2a3a; border: 2px solid #3a5a7a; font-size: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
 .action-btn:active { background: #2a4a6a; transform: scale(0.92); }
