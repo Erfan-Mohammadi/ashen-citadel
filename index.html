@@ -2,22 +2,27 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Ashen Citadel - دژ خاکستر</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0c1422" />
+  <meta name="description" content="دژ خاکستر — بازی استراتژی بقا موبایل" />
+  <title>Ashen Citadel — دژ خاکستر</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <div id="game-container">
     <div id="top-bar">
-      <div class="resource" id="res-wood" title="چوب">🪵 <span>0</span></div>
-      <div class="resource" id="res-stone" title="سنگ">🪨 <span>0</span></div>
-      <div class="resource" id="res-food" title="غذا">🍖 <span>0</span></div>
-      <div class="resource" id="res-coal" title="زغال">🔥 <span>0</span></div>
-      <div class="resource" id="res-iron" title="آهن">⚙️ <span>0</span></div>
-      <div class="resource crystal" id="res-crystal" title="کریستال">💎 <span>0</span></div>
+      <div class="resource" id="res-wood">🪵 <span>0</span></div>
+      <div class="resource" id="res-stone">🪨 <span>0</span></div>
+      <div class="resource" id="res-food">🍖 <span>0</span></div>
+      <div class="resource" id="res-coal">🔥 <span>0</span></div>
+      <div class="resource" id="res-iron">⚙️ <span>0</span></div>
+      <div class="resource crystal" id="res-crystal">💎 <span>0</span></div>
     </div>
     <div id="heat-bar-container">
-      <div id="heat-label">گرمای دژ</div>
+      <div id="heat-label">گرما</div>
       <div id="heat-bar"><div id="heat-fill"></div></div>
       <div id="heat-value">100%</div>
     </div>
@@ -33,11 +38,11 @@
       </div>
     </div>
     <div id="bottom-bar">
-      <button class="action-btn" id="btn-build" title="ساخت و ساز">🏗️</button>
-      <button class="action-btn" id="btn-heroes" title="قهرمانان">⚔️</button>
-      <button class="action-btn" id="btn-defend" title="دفاع از دژ">🛡️</button>
-      <button class="action-btn" id="btn-map" title="مأموریت‌ها">🗺️</button>
-      <button class="action-btn" id="btn-alliance" title="اتحاد">🤝</button>
+      <button class="action-btn" id="btn-build" type="button">🏗️<span class="label">ساخت</span></button>
+      <button class="action-btn" id="btn-heroes" type="button">⚔️<span class="label">قهرمان</span></button>
+      <button class="action-btn" id="btn-defend" type="button">🛡️<span class="label">دفاع</span></button>
+      <button class="action-btn" id="btn-map" type="button">🗺️<span class="label">مأموریت</span></button>
+      <button class="action-btn" id="btn-alliance" type="button">🤝<span class="label">اتحاد</span></button>
     </div>
     <div id="notification" class="hidden"></div>
     <div id="tutorial-overlay" class="hidden">
@@ -45,20 +50,20 @@
         <div id="tutorial-step">۱ / ۵</div>
         <p id="tutorial-text">متن آموزش</p>
         <div id="tutorial-actions">
-          <button id="btn-tutorial-skip" class="btn">رد کردن</button>
-          <button id="btn-tutorial-next" class="btn primary">بعدی</button>
+          <button id="btn-tutorial-skip" class="btn" type="button">رد کردن</button>
+          <button id="btn-tutorial-next" class="btn primary" type="button">بعدی</button>
         </div>
       </div>
     </div>
-    <div id="mission-panel" class="panel hidden" style="bottom: 80px; max-height: 55%; overflow-y: auto;">
-      <h3>مأموریت‌های روزانه 🗺️</h3>
+    <div id="mission-panel" class="panel hidden">
+      <h3>مأموریت‌های روزانه</h3>
       <div id="mission-list"></div>
-      <button id="btn-close-missions" class="btn">بستن</button>
+      <button id="btn-close-missions" class="btn" type="button">بستن</button>
     </div>
-    <div id="hero-panel" class="panel hidden" style="bottom: 80px; max-height: 55%; overflow-y: auto;">
+    <div id="hero-panel" class="panel hidden">
       <h3>قهرمانان دژ</h3>
       <div id="hero-list"></div>
-      <button id="btn-close-heroes" class="btn">بستن</button>
+      <button id="btn-close-heroes" class="btn" type="button">بستن</button>
     </div>
     <div id="defense-overlay" class="hidden">
       <div id="defense-ui">
@@ -66,8 +71,8 @@
         <p>دشمنان نزدیک می‌شوند...</p>
         <div id="wave-info">موج ۱</div>
         <canvas id="defense-canvas" width="360" height="400"></canvas>
-        <button id="btn-start-defense" class="btn primary">شروع دفاع</button>
-        <button id="btn-exit-defense" class="btn">بازگشت</button>
+        <button id="btn-start-defense" class="btn primary" type="button">شروع دفاع</button>
+        <button id="btn-exit-defense" class="btn" type="button">بازگشت</button>
       </div>
     </div>
     <div id="start-screen">
@@ -75,7 +80,7 @@
         <h1>ASHEN CITADEL</h1>
         <h2>دژ خاکستر</h2>
         <p>جهان یخ زده است. تو آخرین امید مردمی...</p>
-        <button id="btn-start-game" class="btn primary large">شروع بازی</button>
+        <button id="btn-start-game" class="btn primary large" type="button">شروع بازی</button>
       </div>
     </div>
   </div>
