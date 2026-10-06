@@ -1,4 +1,4 @@
-// Ashen Citadel v0.8 — Mobile + Missions + Balance
+// Ashen Citadel v0.9 — QA fixes: tutorial RTL, FA rewards, easier defense, build/alliance
 const Game = {
   resources: { wood: 150, stone: 100, food: 180, coal: 70, iron: 25, crystal: 10 },
   heat: 100, heatMax: 100, heatProduction: 2.4, heatConsumption: 1.0,
@@ -21,9 +21,10 @@ const Game = {
   _loadedFromSave: false, tutorialStep: 0, tutorialDone: false,
   missions: [], missionDay: null,
   canvas: null, ctx: null, defenseCanvas: null, defenseCtx: null,
+  resNames: { wood: 'چوب', stone: 'سنگ', food: 'غذا', coal: 'زغال', iron: 'آهن', crystal: 'کریستال' },
   tutorialSteps: [
     { text: "جهان یخ زده است. نوار نارنجی بالای صفحه گرمای دژ را نشان می‌دهد — همیشه آن را بالا نگه دار." },
-    { text: "روی ساختمان‌ها کلیک کن و ارتقا بده. با ارتقا، تولید و گرما بیشتر می‌شود." },
+    { text: "روی ساختمان‌ها کلیک کن و ارتقا بده. با ارتقا، تولید و گرما بیشتر می‌شود. دکمه ساخت هم لیست ساختمان‌ها را باز می‌کند." },
     { text: "دکمه قهرمان را بزن. می‌توانی قهرمان باز کنی و سطح یا ستاره بالا ببری." },
     { text: "دکمه دفاع را بزن. قهرمانان با دشمنان می‌جنگند. پیروزی منابع می‌دهد." },
     { text: "دکمه مأموریت را بزن تا پاداش روزانه بگیری. بازی خودکار ذخیره می‌شود. شروع کن!" }
@@ -57,6 +58,8 @@ const Game = {
     document.getElementById('btn-tutorial-skip').addEventListener('click', () => this.tutorialSkip());
     document.getElementById('btn-map').addEventListener('click', () => this.toggleMissionPanel());
     document.getElementById('btn-close-missions').addEventListener('click', () => this.toggleMissionPanel(false));
+    document.getElementById('btn-build').addEventListener('click', () => this.openBuildMenu());
+    document.getElementById('btn-alliance').addEventListener('click', () => this.notify('اتحاد به‌زودی باز می‌شود — فعلاً دژ خودت را تقویت کن.'));
     this.canvas.addEventListener('click', (e) => this.onCanvasClick(e));
   },
   startGame() {
@@ -72,9 +75,10 @@ const Game = {
   startTutorial() { this.tutorialStep = 0; this.showTutorialStep(); },
   showTutorialStep() {
     if (this.tutorialStep >= this.tutorialSteps.length) { this.tutorialFinish(); return; }
-    document.getElementById('tutorial-step').textContent = (this.tutorialStep+1)+' / '+this.tutorialSteps.length;
+    const n = this.tutorialStep + 1, total = this.tutorialSteps.length;
+    document.getElementById('tutorial-step').textContent = 'گام ' + n + ' از ' + total;
     document.getElementById('tutorial-text').textContent = this.tutorialSteps[this.tutorialStep].text;
-    document.getElementById('btn-tutorial-next').textContent = this.tutorialStep === this.tutorialSteps.length-1 ? 'شروع کن' : 'بعدی';
+    document.getElementById('btn-tutorial-next').textContent = this.tutorialStep === total - 1 ? 'شروع کن' : 'بعدی';
     document.getElementById('tutorial-overlay').classList.remove('hidden');
   },
   tutorialNext() { this.tutorialStep++; if (this.tutorialStep >= this.tutorialSteps.length) this.tutorialFinish(); else this.showTutorialStep(); },
@@ -83,7 +87,13 @@ const Game = {
     document.getElementById('tutorial-overlay').classList.add('hidden');
     this.tutorialDone = true; this.notify('آماده‌ای، فرمانده!'); this.saveGame(true);
   },
-
+  openBuildMenu() {
+    this.closePanel();
+    this.toggleHeroPanel(false);
+    this.toggleMissionPanel(false);
+    this.openBuildingPanel('citadel');
+    this.notify('روی ساختمان‌های نقشه هم می‌توانی کلیک کنی.');
+  },
   getTodayKey() { const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); },
   defaultMissions() {
     return [
@@ -106,6 +116,9 @@ const Game = {
     m.progress=Math.min(m.target, m.progress+amount);
     if (m.progress>=m.target && !m._notified) { m._notified=true; this.notify('مأموریت کامل شد: '+m.title); }
   },
+  formatReward(reward) {
+    return Object.keys(reward).map(r => (this.resNames[r]||r)+': '+reward[r]).join(' • ');
+  },
   toggleMissionPanel(show) {
     const panel=document.getElementById('mission-panel');
     if (show===false) { panel.classList.add('hidden'); return; }
@@ -118,9 +131,9 @@ const Game = {
       const done=m.progress>=m.target;
       const card=document.createElement('div');
       card.className='mission-card'+(m.claimed?' claimed':done?' done':'');
-      let rewardText=''; for (let r in m.reward) rewardText+=r+': '+m.reward[r]+'  ';
-      let btn=m.claimed?'<button class="btn small" disabled>دریافت شد</button>':done?`<button class="btn primary small" onclick="Game.claimMission('${m.id}')">دریافت پاداش</button>`:`<button class="btn small" disabled>${Math.floor(m.progress)}/${m.target}</button>`;
-      card.innerHTML=`<div class="mission-title">${m.title}</div><div class="mission-progress">${m.desc} — ${Math.min(Math.floor(m.progress),m.target)}/${m.target}</div><div class="mission-reward">پاداش: ${rewardText}</div>${btn}`;
+      const rewardText = this.formatReward(m.reward);
+      let btn=m.claimed?'<button class="btn small" disabled>دریافت شد</button>':done?`<button class="btn primary small" onclick="Game.claimMission('${m.id}')">دریافت پاداش</button>`:`<button class="btn small" disabled>${Math.floor(m.progress)} از ${m.target}</button>`;
+      card.innerHTML=`<div class="mission-title">${m.title}</div><div class="mission-progress">${m.desc} — ${Math.min(Math.floor(m.progress),m.target)} از ${m.target}</div><div class="mission-reward">پاداش: ${rewardText}</div>${btn}`;
       list.appendChild(card);
     });
   },
@@ -130,10 +143,9 @@ const Game = {
     for (let r in m.reward) this.resources[r]=(this.resources[r]||0)+m.reward[r];
     m.claimed=true; this.notify('پاداش مأموریت دریافت شد!'); this.updateUI(); this.renderMissions(); this.saveGame(true);
   },
-
   saveGame(silent=false) {
     try {
-      const data = { version: 8, resources: this.resources, heat: this.heat, heatMax: this.heatMax,
+      const data = { version: 9, resources: this.resources, heat: this.heat, heatMax: this.heatMax,
         heatProduction: this.heatProduction, heatConsumption: this.heatConsumption,
         buildings: {}, production: this.production, tutorialDone: this.tutorialDone,
         heroes: this.heroes.map(h => ({ id:h.id, level:h.level, stars:h.stars, owned:h.owned, hp:h.hp, atk:h.atk, def:h.def })),
@@ -163,7 +175,6 @@ const Game = {
     } catch(e) { return false; }
   },
   resetGame() { localStorage.removeItem('ashen_citadel_save'); location.reload(); },
-
   tick() {
     if (!this.gameStarted || this.inDefense) return;
     for (let k in this.production) this.resources[k] += this.production[k];
@@ -190,7 +201,6 @@ const Game = {
     const el = document.getElementById('notification'); el.textContent = text; el.classList.remove('hidden');
     clearTimeout(this._notifyTimer); this._notifyTimer = setTimeout(() => el.classList.add('hidden'), 2600);
   },
-
   drawBase() {
     const ctx = this.ctx, w = this.canvas.width, h = this.canvas.height, t = Date.now();
     const sky = ctx.createLinearGradient(0, 0, 0, h);
@@ -264,7 +274,8 @@ const Game = {
     document.getElementById('building-title').textContent = b.name;
     document.getElementById('building-desc').textContent = b.desc;
     document.getElementById('building-level').textContent = 'سطح فعلی: '+b.level;
-    let t = 'هزینه ارتقاء: '; for (let r in cost) t += r+': '+cost[r]+'  ';
+    let t = 'هزینه ارتقاء: ';
+    for (let r in cost) t += (this.resNames[r]||r)+' '+cost[r]+'  ';
     document.getElementById('building-cost').textContent = t;
     document.getElementById('building-panel').classList.remove('hidden');
   },
@@ -285,7 +296,6 @@ const Game = {
     this.notify(this.buildings[key].name+' به سطح '+this.buildings[key].level+' ارتقا یافت!');
     this.closePanel(); this.updateUI(); this.drawBase(); this.saveGame(true);
   },
-
   toggleHeroPanel(show) {
     const panel = document.getElementById('hero-panel');
     if (show===false) { panel.classList.add('hidden'); return; }
@@ -302,8 +312,8 @@ const Game = {
         card.innerHTML = `<div class="hero-name">${h.name}</div><div class="hero-role">${h.roleFa} • ${'★'.repeat(h.stars)}</div><div class="hero-stats">HP ${h.hp} | ATK ${h.atk} | DEF ${h.def}</div><div class="hero-skill">${h.skill}</div><button class="btn primary small" onclick="Game.unlockHero('${h.id}')">باز کردن (۶ کریستال)</button>`;
       } else {
         const lvC=this.getHeroLevelCost(h), stC=this.getHeroStarCost(h);
-        let lvT='غذا '+lvC.food+(lvC.iron?' • آهن '+lvC.iron:'')+(lvC.crystal?' • 💎 '+lvC.crystal:'');
-        let stT='💎 '+stC.crystal+' • آهن '+stC.iron+' • غذا '+stC.food;
+        let lvT='غذا '+lvC.food+(lvC.iron?' • آهن '+lvC.iron:'')+(lvC.crystal?' • کریستال '+lvC.crystal:'');
+        let stT='کریستال '+stC.crystal+' • آهن '+stC.iron+' • غذا '+stC.food;
         card.innerHTML = `<div class="hero-name">${h.name}</div><div class="hero-role">${h.roleFa} • سطح ${h.level} • ${'★'.repeat(h.stars)}${'☆'.repeat(6-h.stars)}</div><div class="hero-stats">HP ${h.hp} | ATK ${h.atk} | DEF ${h.def}</div><div class="hero-skill">${h.skill}</div><div class="hero-actions">${h.level<20?`<button class="btn primary small" onclick="Game.levelUpHero('${h.id}')">ارتقای سطح (${lvT})</button>`:'<button class="btn small" disabled>سطح حداکثر</button>'}${h.stars<6?`<button class="btn small" onclick="Game.starUpHero('${h.id}')">ستاره (${stT})</button>`:'<button class="btn small" disabled>ستاره حداکثر</button>'}</div>`;
       }
       list.appendChild(card);
@@ -331,7 +341,6 @@ const Game = {
     hero.stars++; hero.hp=Math.floor(hero.hp*1.18); hero.atk=Math.floor(hero.atk*1.15); hero.def=Math.floor(hero.def*1.12);
     this.trackMission('hero'); this.notify(hero.name+' به '+hero.stars+' ستاره رسید! ⭐'); this.updateUI(); this.renderHeroList(); this.saveGame(true);
   },
-
   openDefense() {
     document.getElementById('defense-overlay').classList.remove('hidden'); this.inDefense=true;
     document.getElementById('wave-info').textContent='موج '+this.defenseWave;
@@ -343,20 +352,34 @@ const Game = {
     const owned = this.heroes.filter(h=>h.owned);
     this.defenseHeroes = owned.map((h,i)=>({...h, x:60+i*90, y:320, currentHp:h.hp}));
     this.defenseEnemies = [];
-    for (let i=0;i<2+this.defenseWave;i++) this.defenseEnemies.push({ x:40+Math.random()*280, y:-20-i*40, hp:50+this.defenseWave*20, maxHp:50+this.defenseWave*20, speed:0.5+Math.random()*0.35 });
+    const wave = this.defenseWave;
+    const count = wave <= 2 ? 2 : Math.min(2 + Math.floor(wave * 0.7), 8);
+    const baseHp = wave <= 2 ? 35 + wave * 12 : 50 + wave * 18;
+    const baseSpeed = wave <= 2 ? 0.35 + Math.random() * 0.2 : 0.5 + Math.random() * 0.3;
+    for (let i=0;i<count;i++) this.defenseEnemies.push({
+      x:40+Math.random()*280, y:-20-i*45,
+      hp: baseHp, maxHp: baseHp,
+      speed: baseSpeed * (0.85 + Math.random()*0.3)
+    });
     this.notify('موج '+this.defenseWave+' شروع شد!'); this.defenseLoop();
   },
   defenseLoop() {
     if (!this.defenseRunning) return;
-    const ctx = this.defenseCtx, w = this.defenseCanvas.width, h = this.defenseCanvas.height, t = Date.now();
+    const ctx = this.defenseCtx, w = this.defenseCanvas.width, h = this.defenseCanvas.height;
     const bg = ctx.createLinearGradient(0,0,0,h); bg.addColorStop(0,'#0a1220'); bg.addColorStop(1,'#121c2c');
     ctx.fillStyle = bg; ctx.fillRect(0,0,w,h);
     ctx.fillStyle = '#1a2535'; ctx.fillRect(0,340,w,h-340);
     ctx.strokeStyle = '#3a4a5a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0,340); ctx.lineTo(w,340); ctx.stroke();
     let enemiesAlive = false;
+    const dmgScale = this.defenseWave <= 2 ? 0.06 : 0.045;
     this.defenseEnemies.forEach(e => {
       if (e.hp<=0) return; enemiesAlive=true; e.y+=e.speed;
-      this.defenseHeroes.forEach(hero => { if (hero.currentHp>0&&Math.abs(e.x-hero.x)<42&&e.y>hero.y-35) { hero.currentHp-=0.35; e.hp-=hero.atk*0.045; }});
+      this.defenseHeroes.forEach(hero => {
+        if (hero.currentHp>0&&Math.abs(e.x-hero.x)<48&&e.y>hero.y-40) {
+          hero.currentHp -= this.defenseWave <= 2 ? 0.22 : 0.35;
+          e.hp -= hero.atk * dmgScale;
+        }
+      });
       ctx.fillStyle='#6a2030'; ctx.beginPath(); ctx.arc(e.x,e.y,13,0,Math.PI*2); ctx.fill();
       ctx.fillStyle='#4a1520'; ctx.beginPath(); ctx.arc(e.x,e.y-6,10,Math.PI,0); ctx.fill();
       ctx.fillStyle='#ff4444'; ctx.fillRect(e.x-5,e.y-4,3,3); ctx.fillRect(e.x+2,e.y-4,3,3);
